@@ -1,0 +1,44 @@
+services:
+  - type: web
+    name: swarakosh-backend
+    runtime: node
+    plan: starter
+    region: singapore
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: TRUST_PROXY
+        value: "1"
+      - key: JWT_EXPIRES_IN
+        value: 12h
+      - key: ELEVENLABS_DEFAULT_MODEL
+        value: eleven_multilingual_v2
+      - key: ELEVENLABS_TIMEOUT_MS
+        value: "90000"
+      - key: AWS_REGION
+        value: ap-south-1
+      - key: S3_KEY_PREFIX
+        value: brahmakosh-audio
+      - key: PRESIGN_TTL_SECONDS
+        value: "3600"
+      # Secrets and environment-specific values: set these in the Render dashboard.
+      - key: CLIENT_ORIGIN # your Vercel URL, e.g. https://swarakosh.vercel.app
+        sync: false
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ELEVENLABS_API_KEY
+        sync: false
+      - key: ELEVENLABS_VOICES
+        sync: false
+      - key: AWS_BUCKET_NAME
+        sync: false
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false
