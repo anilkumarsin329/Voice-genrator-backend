@@ -12,10 +12,17 @@ const { notFound, errorHandler } = require('./middleware/error');
 const app = express();
 if (config.trustProxy) app.set('trust proxy', config.trustProxy);
 
+// CLIENT_ORIGIN entries may use `*` as a wildcard, e.g. https://voice-genrator-*.vercel.app for Vercel preview URLs.
+const originMatchers = config.clientOrigins.map((o) => new RegExp(`^${o.split('*').map((p) => p.replace(/[.+?^${}()|[\]\\]/g, '\\$&')).join('[a-z0-9-]+')}$`, 'i'));
+const isAllowedOrigin = (origin) => !origin || originMatchers.some((re) => re.test(origin));
+
 app.use(helmet());
 app.use(
   cors({
-    origin: (origin, cb) => cb(null, !origin || config.clientOrigins.includes(origin)),
+    origin: (origin, cb) => {
+      if (!isAllowedOrigin(origin)) logger.warn('CORS blocked origin', { origin });
+      cb(null, isAllowedOrigin(origin));
+    },
     credentials: false,
   })
 );
