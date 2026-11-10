@@ -76,7 +76,10 @@ const voiceTest = z.object({
   voiceId,
   language,
   text: z.string().trim().min(1).max(400),
-  ...settings,
+  modelId: modelId.default(config.elevenlabs.defaultModel),
+  speed: z.coerce.number().min(0.7).max(1.2).default(0.9),
+  stability: z.coerce.number().min(0).max(1).default(0.75),
+  similarityBoost: z.coerce.number().min(0).max(1).default(0.75),
 });
 
 const login = z.object({ email: z.string().trim().toLowerCase().email(), password: z.string().min(1).max(200) });

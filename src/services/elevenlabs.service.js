@@ -1,7 +1,7 @@
 const config = require('../config');
 const ApiError = require('../utils/ApiError');
 const logger = require('../utils/logger');
-const { LANGUAGE_CODES } = require('../utils/constants');
+const { LANGUAGE_CODES, LANGUAGE_CODE_MODELS } = require('../utils/constants');
 
 const { baseUrl, apiKey, timeoutMs, outputFormat } = config.elevenlabs;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -60,8 +60,10 @@ const textToSpeech = async ({ text, voiceId, modelId, language, speed, stability
     model_id: modelId,
     voice_settings: { stability, similarity_boost: similarityBoost, speed, use_speaker_boost: true },
   };
-  // language_code is only accepted by turbo/flash models
-  if (LANGUAGE_CODES[language] && /turbo|flash/.test(modelId)) body.language_code = LANGUAGE_CODES[language];
+  // language_code improves Indic pronunciation on v3, turbo and flash models
+  if (LANGUAGE_CODES[language] && LANGUAGE_CODE_MODELS.test(modelId)) body.language_code = LANGUAGE_CODES[language];
+  // Lower speaker_boost for non-English to reduce artifacts on Devanagari text
+  if (language !== 'english') body.voice_settings.use_speaker_boost = false;
 
   const res = await request(
     `/v1/text-to-speech/${encodeURIComponent(voiceId)}?output_format=${outputFormat}`,

@@ -22,7 +22,7 @@ const config = {
   elevenlabs: {
     apiKey: process.env.ELEVENLABS_API_KEY,
     baseUrl: 'https://api.elevenlabs.io',
-    defaultModel: process.env.ELEVENLABS_DEFAULT_MODEL || 'eleven_multilingual_v2',
+    defaultModel: process.env.ELEVENLABS_DEFAULT_MODEL || 'eleven_v3',
     timeoutMs: Number(process.env.ELEVENLABS_TIMEOUT_MS) || 90000,
     outputFormat: 'mp3_44100_128',
     envVoices: parseVoices(),
