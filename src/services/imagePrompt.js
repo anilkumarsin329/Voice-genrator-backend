@@ -1,31 +1,16 @@
-// Brahmakosh sacred-art guidelines + the structured prompt template.
+// Brahmakosh image generation prompt builder.
 
-const SYSTEM_PROMPT = `You are an expert AI image generation assistant specialized in sacred Hindu scripture visualization for the Brahmakosh digital platform.
+const SYSTEM_PROMPT = `You are a world-class AI image generation assistant. Generate exactly what the user describes with maximum visual quality and realism.
 
-Generate photorealistic or artistic images based on the following strict guidelines:
+CORE RULES:
+- Generate precisely what is described — do not add or remove subjects
+- No text, watermarks, or signatures in the image
+- Ultra high detail, sharp, cinematic quality
+- Match the mood and atmosphere of the scene naturally
 
-STYLE RULES:
-- Art style: Traditional Indian miniature painting, Tanjore art, or photorealistic devotional imagery
-- Color palette: Rich golds, deep saffrons, royal blues, sacred whites, vermillion reds
-- Lighting: Divine, ethereal, soft golden hour or temple lamp glow
-- Composition: Centered, balanced, symmetrical, following classical Indian aesthetic principles
-
-CONTENT RULES:
-- Subject: Hindu deities, Ramayana scenes, Sanskrit scripture illustrations, temple architecture
-- Always depict deities with correct iconography (correct number of arms, weapons, vahana, mudras)
-- Maintain cultural authenticity and religious reverence
-- No modern elements, no western clothing, no anachronistic objects
-
-QUALITY RULES:
-- Ultra high detail, 8K quality
-- Sharp edges, no blur
-- Museum-quality artwork standard
-- Suitable for digital publication and print
-
-OUTPUT FORMAT:
-- Single focused subject
-- Clean background or appropriate sacred setting (temple, forest, celestial realm)
-- No text or watermarks in image`;
+When the scene involves Hindu deities or Ramayana:
+- Use correct iconography (arms, weapons, vahana, mudras)
+- Maintain cultural authenticity and religious reverence`;
 
 const OPTIONS = {
   styles: ['Tanjore', 'Miniature', 'Photorealistic', 'Sketch'],
@@ -44,28 +29,29 @@ const OPTIONS = {
 };
 
 const STYLE_HINTS = {
-  Tanjore: 'Tanjore painting: gold-leaf relief, gem inlays, ornate arch frame, rich flat colors',
+  Tanjore: 'Tanjore painting style: gold-leaf relief, gem inlays, ornate arch frame, rich flat colors',
   Miniature: 'Traditional Indian miniature painting: fine linework, flat vivid color fields, decorative borders',
-  Photorealistic: 'photorealistic devotional imagery, cinematic divine lighting',
-  Sketch: 'fine hand-drawn ink and pencil sketch on aged paper, classical Indian line art',
+  Photorealistic: 'photorealistic, cinematic lighting, hyper-detailed',
+  Sketch: 'fine hand-drawn ink and pencil sketch on aged paper',
 };
 
-/** Full prompt for a brand-new image. `verseText` is optional scripture context. */
-const buildGeneratePrompt = ({ scene, language, verseReference, style, mood, verseText }) =>
-  [
+/** Full prompt for a brand-new image. */
+const buildGeneratePrompt = ({ scene, language, verseReference, style, mood, verseText }) => {
+  const isDevotional = /rama|sita|hanuman|lakshmana|krishna|shiva|vishnu|devi|deity|temple|ramayana|kanda|verse|sanskrit/i.test(scene);
+  return [
     SYSTEM_PROMPT,
     '',
-    `[SCENE]: ${scene}`,
-    `[LANGUAGE CONTEXT]: ${language}`,
-    verseReference && `[VERSE REFERENCE]: ${verseReference}`,
-    verseText && `[VERSE TEXT]: ${verseText}`,
-    `[STYLE]: ${style} (${STYLE_HINTS[style] || style})`,
-    `[MOOD]: ${mood}`,
-    '',
-    'Generate a sacred Hindu devotional image strictly following the system guidelines.',
+    scene,
+    verseReference && `Context: ${verseReference}`,
+    verseText && `Verse: ${verseText}`,
+    isDevotional && style !== 'Photorealistic' && `Art style: ${STYLE_HINTS[style] || style}`,
+    isDevotional && `Mood: ${mood}`,
+    !isDevotional && style === 'Photorealistic' && 'Style: photorealistic, cinematic, ultra detailed',
+    !isDevotional && style === 'Sketch' && 'Style: hand-drawn sketch, detailed linework',
   ]
     .filter(Boolean)
     .join('\n');
+};
 
 /** Prompt for refining the previous image: keep what works, change only what was asked. */
 const buildEditPrompt = ({ instruction, style, mood }) =>
