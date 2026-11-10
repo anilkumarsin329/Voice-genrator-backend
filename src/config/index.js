@@ -27,6 +27,15 @@ const config = {
     outputFormat: 'mp3_44100_128',
     envVoices: parseVoices(),
   },
+  image: {
+    apiKey: process.env.OPENAI_API_KEY,
+    model: process.env.OPENAI_IMAGE_MODEL || 'gpt-image-2',
+    timeoutMs: Number(process.env.IMAGE_TIMEOUT_MS) || 240000,
+    dailyLimit: Number(process.env.IMAGE_DAILY_LIMIT) || 200, // generations per admin per UTC day
+    maxConcurrent: Number(process.env.IMAGE_MAX_CONCURRENT) || 2, // simultaneous generations per admin
+    // Own S3 prefix so images never mix with audio (`S3_KEY_PREFIX`) or the platform's other uploads.
+    s3Prefix: (process.env.S3_IMAGE_PREFIX || 'brahmakosh-images').replace(/^\/+|\/+$/g, ''),
+  },
   aws: {
     region: process.env.AWS_REGION,
     bucket: process.env.AWS_BUCKET_NAME,

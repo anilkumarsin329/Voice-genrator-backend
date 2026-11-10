@@ -2,7 +2,10 @@ const { z } = require('zod');
 const config = require('../config');
 const { LANGUAGES, VOICE_STYLES } = require('../utils/constants');
 
-const objectId = z.string().regex(/^[a-f\d]{24}$/i, 'Invalid id');
+const { OPTIONS: IMAGE_OPTIONS } = require('../services/imagePrompt');
+const { EFFECTS: GIF_EFFECTS } = require('../services/gif.service');
+
+const objectId =z.string().regex(/^[a-f\d]{24}$/i, 'Invalid id');
 const voiceId = z.string().regex(/^[A-Za-z0-9]{10,40}$/, 'Invalid voice id');
 const language = z.enum(LANGUAGES);
 const modelId = z.string().regex(/^eleven_[a-z0-9_]+$/, 'Invalid model id');
@@ -86,6 +89,28 @@ const login = z.object({ email: z.string().trim().toLowerCase().email(), passwor
 
 const scriptureVerses = z.object({ language: language.optional(), sarga: z.coerce.number().int().min(1).optional() });
 
+/* ---- image studio ---- */
+const imageGenerate = z.object({
+  chatId: objectId.optional(),
+  scene: z.string().trim().min(3, 'Describe the scene (min 3 characters)').max(800, 'Scene must be at most 800 characters'),
+  baseGenId: objectId.optional(), // set = edit that earlier image instead of creating a new one
+  verseId: objectId.optional(),
+  verseReference: z.string().trim().max(100).optional().default(''),
+  style: z.enum(IMAGE_OPTIONS.styles).default('Tanjore'),
+  mood: z.enum(IMAGE_OPTIONS.moods).default('Devotional'),
+  language: z.enum(IMAGE_OPTIONS.languages).default('Sanskrit'),
+  size: z.enum(IMAGE_OPTIONS.sizes.map((s) => s.id)).default('1024x1024'),
+  quality: z.enum(IMAGE_OPTIONS.qualities.map((q) => q.id)).default('medium'),
+});
+const imageChatList = z.object({
+  q: z.string().trim().max(100).optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(40),
+});
+const imageAnimate = z.object({ effect: z.enum(GIF_EFFECTS.map((e) => e.id)) });
+const imageChatRename =z.object({ title: z.string().trim().min(1).max(120) });
+
 module.exports = {
   generate, regenerate, bulkGenerate, history, idParam, voiceIdParam, voiceConfigUpdate, voiceTest, login, scriptureVerses,
+  imageGenerate, imageChatList, imageChatRename, imageAnimate,
 };
